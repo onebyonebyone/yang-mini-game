@@ -11,18 +11,18 @@
 </head>
 <body>
   <div id="app">
-    <h1>第 {{ level }} 关</h1>
+    <h1>the {{ level }} level</h1>
     <header>
-      <span class="btn" @click="handleStart">开始游戏</span>
-      <span class="btn" @click="handleReset">重置</span>
-      <span class="btn" @click="handleSwitch('prev')">上一关</span>
-      <span class="btn" @click="handleSwitch('next')">下一关</span>
+      <span class="btn" @click="handleStart">start</span>
+      <span class="btn" @click="handleReset">reset</span>
+      <span class="btn" @click="handleSwitch('prev')">Previous Level</span>
+      <span class="btn" @click="handleSwitch('next')">Next Level</span>
       <p class="center">
-        行: 
+        row: 
         <select v-model="config.row">
           <option :value ="item" v-for="item in [3,4,5,6,7,8]">{{ item }}</option>
         </select>
-        列: 
+        column: 
         <select v-model="config.col">
           <option :value ="item" v-for="item in [3,4,5,6,7,8]">{{ item }}</option>
         </select>
