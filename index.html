@@ -405,7 +405,7 @@
        */
       const saveUserInfoToBackend = () => {
         const data = Telegram.WebApp.initDataUnsafe;
-
+ console.log("User info loaded:", Telegram.WebApp.initDataUnsafe);
         if (data && data.user) {
           const userInfo = {
             uid: data.user.id,
