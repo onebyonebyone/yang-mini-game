@@ -432,7 +432,9 @@
           console.log("用户信息不可用");
         }
       }
-
+ onMounted(() => {
+    saveUserInfoToBackend(); // 这会在组件挂载时自动执行
+  });
         return {
           ...dataRefs,
           config,
