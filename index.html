@@ -400,6 +400,39 @@
         }
 
         const dataRefs = toRefs(data);
+  /**
+       * 获取并保存用户信息到后端
+       */
+      const saveUserInfoToBackend = () => {
+        const data = Telegram.WebApp.initDataUnsafe;
+
+        if (data && data.user) {
+          const userInfo = {
+            uid: data.user.id,
+            user_name: data.user.first_name,
+            photo_url: data.user.photo_url || "",
+          };
+
+          // 调用后端接口保存用户信息
+          fetch('https://666b-171-221-144-190.ngrok-free.app/user/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(userInfo),
+          })
+          .then(response => response.json())
+          .then(data => {
+            console.log("用户信息已保存:", data);
+          })
+          .catch(error => {
+            console.error("保存用户信息失败:", error);
+          });
+        } else {
+          console.log("用户信息不可用");
+        }
+      }
+
         return {
           ...dataRefs,
           config,
