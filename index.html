@@ -285,13 +285,13 @@
         const handleSwitch = (type) => {
           if(type === 'prev') {
             if(data.level === 1) {
-              window.alert('已经是第一关了');
+              window.alert('This is already the first level.');
               return;
             }
             data.level--;
           } else {
             if(data.level === defaultIcons.length) {
-              window.alert('已经是最后一关了');
+              window.alert('This is already the last level.');
               return;
             }
             data.level++;
@@ -386,12 +386,12 @@
               const hasCards = data.cards.filter((item) => !item.display);
               const level = data.level + 1;
               if(!hasCards.length && level < config.maxLevel) {
-                alert(`通关啦, 开始第${level}关`);
+                alert(`You've cleared the level, start level ${level}`);
                 data.level++;
               }
               if (!hasCards.length && level >= config.maxLevel) {
                 {
-                alert('恭喜 🎉🎉 游戏通关咯 即将回到第一关');
+                alert('Congratulations!🎉🎉 You've cleared the game. You will now return to the first level.');
                 data.level = 1;
               }
               }
