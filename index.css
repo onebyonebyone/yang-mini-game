@@ -9,7 +9,7 @@ body {
   padding: 0;
 }
 
-#app {
+#index-app {
   height: 100%;
   width: 100%;
   display: flex;
@@ -17,7 +17,7 @@ body {
   align-items: center;
   box-sizing: border-box;
   background: url("./static/index.png");
-  background-size: 100% 100%; /* 让图片覆盖整个容器，保持比例 */
+  background-size:100% 100%; /* 让图片覆盖整个容器，保持比例 */
   background-position: center; /* 图片居中显示 */
   background-repeat: no-repeat; /* 不重复背景图像 */
 }
@@ -28,7 +28,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 40vh;
+  margin-top: 30vh;
 }
 .btn {
   margin-bottom: 10px;
@@ -37,7 +37,7 @@ body {
   font-family: Arial;
   color: #ffffff;
   font-size: 14px;
-  width: 110px;
+  width: 116px;
   padding: 12px 0;
   text-decoration: none;
   cursor: pointer;

@@ -7,17 +7,21 @@
       name="viewport"
       content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
     />
-    <link rel="stylesheet" href="game.css" />
+    <link rel="stylesheet" href="./game.css" />
     <script src="https://unpkg.com/vue@3.2.12/dist/vue.global.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
     <script src="./utils/audio.js"></script>
     <title></title>
   </head>
   <body>
-    <div id="app">
+    <div id="game-app">
       <!-- 容器 -->
       <div class="header">
-        <span class="level">the {{ level }} level</span>
+        <div style="display: flex;align-items: center;">
+          <img src="./static/avater.png" style="height: 36px;width: 36px;border-radius: 50%;">
+          &nbsp;
+          <span class="level">the {{ level }} level</span>
+        </div>
         <div class="countdown">{{ formattedTime }}</div>
       </div>
       <div class="wrap">
@@ -48,7 +52,7 @@
         setup() {
           // 初始化音乐控件
           const audio = new CustomAudio({
-            template: "#app",
+            template: "#game-app",
             bgmSrc: "./static/bgm.mp3",
             clickBgm: "./static/clickBgm.mp3",
           });
@@ -557,7 +561,7 @@
           };
         },
       };
-      Vue.createApp(App).mount("#app");
+      Vue.createApp(App).mount("#game-app");
     </script>
   </body>
 </html>

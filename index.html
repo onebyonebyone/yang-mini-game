@@ -7,32 +7,44 @@
       name="viewport"
       content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
     />
-    <link rel="stylesheet" href="index.css" />
+    <link rel="stylesheet" href="./index.css" />
     <script src="https://unpkg.com/vue@3.2.12/dist/vue.global.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
     <script src="./utils/audio.js"></script>
     <title></title>
   </head>
   <body>
-    <div id="app">
+    <div id="index-app">
       <div class="btn-container">
+        <img src="./static/avater.png" style="width: 76px;height: 76px;border-radius: 50%;margin-bottom: 10px;">
         <div class="btn" @click="handleStart">Start</div>
-        <div class="btn" @click="handleStart">Donate</div>
+        <div class="btn" @click="sendStars">Donate</div>
       </div>
     </div>
     <script>
       const { reactive, ref, toRefs, setup, computed, onMounted, watch } = Vue;
       const App = {
         setup() {
-          const handleStart = () =>{
-            window.location.href = "game.html"
-          }
+          const handleStart = () => {
+            window.location.href = "game.html";
+          };
+          const sendStars = () => {
+            const link = "https://t.me/$N6mSE237aVdKAQAA36i_8YMStuw";
+
+            // 使用 Telegram.WebApp.openLink 在小程序内部打开链接
+            if (window.Telegram && window.Telegram.WebApp) {
+              window.Telegram.WebApp.openInvoice(link);
+            } else {
+              alert("Telegram WebApp API is not available");
+            }
+          };
           return {
             handleStart,
+            sendStars
           };
         },
       };
-      Vue.createApp(App).mount("#app");
+      Vue.createApp(App).mount("#index-app");
     </script>
   </body>
 </html>

@@ -8,7 +8,7 @@ html, body {
   padding: 0;
 }
 
-#app {
+#game-app {
   height: 100%;
   width: 100%;
   display: flex;
@@ -79,7 +79,8 @@ html, body {
   align-items: center;
   width: calc(100% - 2px);
   height:calc(100% - 2px);
-  border: 1px solid rgb(100, 100, 100);
+  border: 1px solid #FFD700; /* 金色 */
+  box-shadow: 0 0 1px 1px rgba(255, 215, 0, 0.5); /* 主发光 */
   border-radius: 10px;
   background-color: #ccc;
 }
