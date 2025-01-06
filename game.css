@@ -1,0 +1,122 @@
+html, body {
+  height: 100%;
+  width: 100%;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+#app {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  background: url('./static/game.png');
+  background-size: cover; /* 让图片覆盖整个容器，保持比例 */
+  background-position: center; /* 图片居中显示 */
+  background-repeat: no-repeat; /* 不重复背景图像 */
+}
+
+.header{
+  height: 10vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  padding:10px
+}
+.level{
+  color: white;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+  font-family: Arial, sans-serif; 
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.wrap {
+  border: 1px solid #ccc;
+  width: 100%;
+  height: 80vh;
+  box-sizing: border-box;
+}
+
+/*** 卡片容器 ***/
+.container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 44px;
+  box-sizing: border-box;
+}
+
+/*** 卡片 ***/
+.card-wrap {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+  width: 40px;
+  font-size: 30px;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: calc(100% - 2px);
+  height:calc(100% - 2px);
+  border: 1px solid rgb(100, 100, 100);
+  border-radius: 10px;
+  background-color: #ccc;
+}
+.card span {
+  opacity: 0.5;
+  font-size: 24px;
+}
+.is-allow {
+  background-color: white;
+}
+.is-allow span {
+  opacity: 1;
+}
+/*** 卡片动画 ***/
+@keyframes scaleDraw {
+  0% {
+    transform: scale(1.1);
+  }
+  20% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0);
+  }
+}
+
+/*** 卡槽 ***/
+.card-slot {
+  border: 1px solid #ccc;
+  height: 10vh;
+  width: 100%;
+}
+
+/* 倒计时 */
+.countdown {
+  font-size: 2rem;
+  font-weight: bold;
+  color:#fff 
+
+}

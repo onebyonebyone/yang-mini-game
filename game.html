@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <link rel="stylesheet" href="game.css" />
+    <script src="https://unpkg.com/vue@3.2.12/dist/vue.global.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+    <script src="./utils/audio.js"></script>
+    <title></title>
+  </head>
+  <body>
+    <div id="app">
+      <!-- 容器 -->
+      <div class="header">
+        <span class="level">the {{ level }} level</span>
+        <div class="countdown">{{ formattedTime }}</div>
+      </div>
+      <div class="wrap">
+        <div class="container">
+          <div
+            class="card-wrap"
+            v-for="(item, index) in cards"
+            :key="index"
+            :style="setCardStyle(item)"
+          >
+            <div
+              class="card"
+              :class="[item.not && 'is-allow', item.id]"
+              :style="setAnimation(item)"
+              @click="clickCard(item, index)"
+            >
+              <span>{{ item.icon }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 卡槽 -->
+      <div class="card-slot"></div>
+    </div>
+    <script>
+      const { reactive, ref, toRefs, setup, computed, onMounted, watch } = Vue;
+      const App = {
+        setup() {
+          // 初始化音乐控件
+          const audio = new CustomAudio({
+            template: "#app",
+            bgmSrc: "./static/bgm.mp3",
+            clickBgm: "./static/clickBgm.mp3",
+          });
+          window.customAudio = audio;
+          // 配置项
+          const config = reactive({
+            // 与卡片宽度一致
+            base: 40,
+            // 卡槽中最长卡片长度
+            selectMaxLength: 7,
+            // 卡槽设定多少个相同卡片就消掉
+            maxCount: 3,
+            // 动画时间 毫秒
+            animationTime: 400,
+            // 最大关数
+            maxLevel: 10,
+            // 行
+            row: 0,
+            // 列
+            col: 0,
+          });
+
+          const data = reactive({
+            level: 1,
+            cards: [],
+            select: new Map(),
+            containerInfo: null,
+            cardSlotInfo: null,
+            headerInfo: null,
+          });
+
+          const totalSeconds = ref(90); // 总倒计时时间（90秒）
+          const currentSeconds = ref(totalSeconds.value); // 当前剩余时间
+          const timer = ref(null); // 倒计时计时器
+
+          // 格式化时间为 MM:SS
+          const formattedTime = computed(() => {
+            const minutes = Math.floor(currentSeconds.value / 60)
+              .toString()
+              .padStart(2, "0");
+            const seconds = (currentSeconds.value % 60)
+              .toString()
+              .padStart(2, "0");
+            return `${minutes}:${seconds}`;
+          });
+
+          /**
+           * 卡槽已存在卡片长度
+           */
+          const selectLength = computed(() => {
+            let length = 0;
+            data.select.forEach((item) => {
+              length += item.length;
+            });
+            return length;
+          });
+
+          /**
+           * 卡片默认图标
+           */
+          const defaultIcons = [
+            "🐑",
+            "🌹",
+            "🐖",
+            "🍚",
+            "👓",
+            "🐭",
+            "😘",
+            "🍑",
+            "⭐",
+            "💩",
+            "💊",
+            "🎈",
+          ];
+          /**
+           * 根据等级选择卡片图标的多种选择
+           */
+          const icons = computed(() => {
+            return defaultIcons.slice(0, 2 * data.level);
+          });
+
+          /**
+           * 卡片默认偏移值 随意设定
+           */
+          const defaultOffsetValue = [
+            7, -7, 20, -20, 25, -25, 33, -33, 40, -40,
+          ];
+          const defaultOffsetValueLength = defaultOffsetValue.length;
+
+          /**
+           * 卡片默认生成3的倍数 不是3的倍数的则不可能通关
+           */
+          const defaultRounds = [3, 6, 9, 3, 6, 3, 3, 6, 3];
+          /**
+           * 容器样式
+           */
+          const setContainerStyle = () => {
+            const { base, row, col } = config;
+            return `height: ${base * row}px; width: ${base * col}px`;
+          };
+          /**
+           * 设置卡片位置
+           */
+          const setCardStyle = ({ x, y }) => {
+            return `
+            transform: translateX(${x}px) translateY(${y}px);
+          `;
+          };
+          /**
+           * 设置卡片动画
+           */
+          const setAnimation = ({ id, clear, display }) => {
+            let isClear = "";
+            if (clear) {
+              isClear = `animation: scaleDraw ${config.animationTime}ms;`;
+            }
+            if (display) {
+              isClear += "display: none;";
+            }
+            return isClear;
+          };
+
+          /**
+           * 随机生成指定长度id
+           */
+          const randomCreateId = (length) => {
+            return (Math.random() + new Date().getTime())
+              .toString(32)
+              .slice(0, length);
+          };
+
+          const dataRefs = toRefs(data);
+
+          // 重置倒计时
+          const resetCountDown = () => {
+            if (timer.value) {
+              clearInterval(timer.value);
+              timer.value = null;
+            }
+            totalSeconds.value = 90; // 总倒计时时间（90秒）
+            currentSeconds.value = 90; // 当前剩余时间
+            startCountdown();
+          };
+
+          const quite = () =>{
+            if(timer.value){
+              clearInterval(timer.value)
+              timer.value = null
+            }
+            window.href="index.html"
+          }
+
+          // 开始倒计时
+          const startCountdown = () => {
+            if (timer.value !== null) return; // 如果计时器已存在，防止重复启动
+            timer.value = setInterval(() => {
+              if (currentSeconds.value > 0) {
+                currentSeconds.value--;
+              } else {
+                clearInterval(timer.value); // 清除计时器
+                timer.value = null; // 重置计时器状态
+                var userConfirmed = window.confirm(
+                  "game over!! restart the game?"
+                );
+                if (userConfirmed) {
+                  // 用户点击了“确定”按钮
+                  handleReset();
+                } else {
+                  quite()
+                }
+              }
+            }, 1000);
+          };
+
+          const getDoMInfo = () => {
+            const containerDom = document.querySelector(".container");
+            data.containerInfo = containerDom.getBoundingClientRect();
+            const cardSlotDom = document.querySelector(".card-slot");
+            data.cardSlotInfo = cardSlotDom.getBoundingClientRect();
+            const headerDom = document.querySelector(".header");
+            data.headerInfo = headerDom.getBoundingClientRect();
+            const containerWidth = data.containerInfo.width - 100;
+            const containerHeight = data.containerInfo.height - 100;
+            config.col = Math.floor(containerWidth / 40);
+            config.row = Math.floor(containerHeight / 40);
+            console.log(config.row, config.col);
+          };
+
+          /**
+           * 等级切换 重置游戏
+           */
+          watch(
+            () => data.level,
+            () => {
+              handleReset();
+            }
+          );
+          watch(
+            () => config.row,
+            () => {
+              getDoMInfo();
+              data.select.clear();
+              data.cards = [];
+            }
+          );
+          watch(
+            () => config.col,
+            () => {
+              getDoMInfo();
+              data.select.clear();
+              data.cards = [];
+            }
+          );
+
+          /**
+           * 初始化
+           */
+          const init = () => {
+            console.log("init game--->", icons.value);
+            data.select.clear();
+            for (const i in icons.value) {
+              // 随机3的倍数
+              const rounds =
+                defaultRounds[Math.floor(Math.random() * defaultRounds.length)];
+              for (let k = 0; k < rounds; k++) {
+                createCardInfo(icons.value[i]);
+              }
+            }
+            checkShading();
+          };
+
+          /**
+           * 创建卡片属性
+           * id icon x y 。。。
+           */
+          const createCardInfo = (icon) => {
+            // 偏移
+            const offset =
+              defaultOffsetValue[
+                Math.floor(defaultOffsetValueLength * Math.random())
+              ];
+            // 随机8列 8行
+            const row = Math.floor(Math.random() * config.row);
+            const col = Math.floor(Math.random() * config.col);
+
+            let x = col * config.base + offset;
+            let y = row * config.base + offset;
+
+            data.cards.push({
+              id: randomCreateId(6),
+              icon,
+              x,
+              y,
+              // 控制遮罩层
+              not: true,
+              // 是否在卡槽中 0否 1是
+              status: 0,
+              // 是否清除
+              clear: false,
+              // 隐藏
+              display: false,
+            });
+          };
+
+          /**
+           * 是否能点击 是否有阴影
+           */
+          const checkShading = () => {
+            const cards = data.cards;
+            for (let i = 0; i < cards.length; i++) {
+              const cur = cards[i];
+              cur.not = true;
+              // 已消完卡片和在卡槽内的卡片跳过
+              if (cur.status !== 0 || cur.display) continue;
+              const { x: x1, y: y1 } = cur;
+              const x2 = x1 + config.base,
+                y2 = y1 + config.base;
+
+              for (let j = i + 1; j < cards.length; j++) {
+                const compare = cards[j];
+                // 已消完卡片和在卡槽内的卡片跳过
+                if (compare.status !== 0 || compare.display) continue;
+                const { x, y } = compare;
+                if (
+                  !(
+                    y + config.base <= y1 ||
+                    y >= y2 ||
+                    x + config.base <= x1 ||
+                    x >= x2
+                  )
+                ) {
+                  cur.not = false;
+                  break;
+                }
+              }
+            }
+          };
+
+          /**
+           * 开始游戏
+           */
+          const handleStart = () => {
+            if (data.cards.length) {
+              window.alert("游戏中");
+              return;
+            }
+            resetCountDown();
+            audio.play();
+            init();
+          };
+
+          /**
+           * 重置游戏
+           */
+          const handleReset = () => {
+            // 清空已有的卡片
+            data.cards.length = 0;
+            data.select.clear();
+            resetCountDown();
+            init();
+            audio.replay();
+          };
+
+          /**
+           * 切换关卡
+           */
+          const handleSwitch = (type) => {
+            if (type === "prev") {
+              if (data.level === 1) {
+                window.alert("This is already the first level.");
+                return;
+              }
+              data.level--;
+            } else {
+              if (data.level === defaultIcons.length) {
+                window.alert("This is already the last level.");
+                return;
+              }
+              data.level++;
+            }
+          };
+
+          /**
+           * 点击卡片
+           */
+          const clickCard = async (item, index) => {
+            // 卡槽中的卡片不允许点击
+            if (item.status === 1) return;
+
+            // 播放点击音乐
+            audio.rePlayClickBgm();
+
+            const length = selectLength.value;
+            const { selectMaxLength } = config;
+            if (item.not && length < selectMaxLength) {
+              const cards = data.cards;
+              const currentCard = cards[index];
+              currentCard.status = 1;
+
+              // 刷新卡槽位置
+              await refreshCardPosition(currentCard);
+              // 刷新被遮挡卡片
+              checkShading();
+            }
+
+            // 校验卡片卡槽卡片数量长度
+            setTimeout(() => {
+              if (selectLength.value >= config.selectMaxLength) {
+                var userConfirmed = window.confirm(
+                  "game over!! restart the game?"
+                );
+                if (userConfirmed) {
+                  // 用户点击了“确定”按钮
+                  handleReset();
+                } else {
+                  quite()
+                }
+              }
+            }, config.animationTime);
+          };
+
+          /**
+           * 刷新卡槽卡片位置
+           */
+          const refreshCardPosition = (item) => {
+            const { height: headerHeight } = data.headerInfo;
+            const { x, y, height: cardHeight } = data.cardSlotInfo;
+            const { top, left, offsetY, bottom } = data.containerInfo;
+            console.log(y, headerHeight);
+
+            if (item) {
+              // 是否存在
+              const cards = data.select.get(item.icon);
+              if (cards) {
+                cards.push(item);
+                checkSelectQueue(cards);
+              } else {
+                data.select.set(item.icon, [item]);
+              }
+            }
+            // 重新刷新位置
+            let index = 0;
+            const poor = x < left ? -(left - x) : x - left;
+            data.select.forEach((item) => {
+              item.forEach((card) => {
+                card.x = index * config.base + poor + config.base / 2;
+                card.y =
+                  y - (44 + headerHeight) + Math.floor((cardHeight - 40) / 2);
+                index++;
+              });
+            });
+          };
+          /**
+           * 校验卡槽中是否3个相同的存在
+           */
+          const checkSelectQueue = (cards) => {
+            if (cards.length === config.maxCount) {
+              cards.forEach((item) => {
+                item.clear = true;
+              });
+
+              setTimeout(() => {
+                // 删除卡槽中卡片
+                data.select.delete(cards[0].icon);
+                // 删除cards中的卡片 软删除 display代替
+                cards.forEach((item) => {
+                  item.display = true;
+                });
+              }, config.animationTime - 100);
+
+              setTimeout(() => {
+                // 属性卡槽卡片位置
+                refreshCardPosition();
+
+                // 校验是否卡片列表是否还有未消除的卡片
+                const hasCards = data.cards.filter((item) => !item.display);
+                const level = data.level + 1;
+                if (!hasCards.length && level < config.maxLevel) {
+                  alert(`You've cleared the level, start level ${level}`);
+                  data.level++;
+                }
+                if (!hasCards.length && level >= config.maxLevel) {
+                  {
+                    alert(
+                      "Congratulations!🎉🎉 You will now return to the first level."
+                    );
+                    data.level = 1;
+                  }
+                }
+              }, config.animationTime + 100);
+            }
+          };
+
+          /**
+           * 获取并保存用户信息到后端
+           */
+          const saveUserInfoToBackend = () => {
+            const data = Telegram.WebApp.initDataUnsafe;
+            console.log("User info loaded:", Telegram.WebApp.initDataUnsafe);
+            if (data && data.user) {
+              const userInfo = {
+                uid: data.user.id,
+                user_name: data.user.first_name,
+                photo_url: data.user.photo_url || "",
+              };
+
+              // 调用后端接口保存用户信息
+              fetch("https://video-back.guoyufeng.cn/user/login", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(userInfo),
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  console.log("用户信息已保存:", data);
+                })
+                .catch((error) => {
+                  console.error("保存用户信息失败:", error);
+                });
+            } else {
+              console.log("用户信息不可用");
+            }
+          };
+          onMounted(() => {
+            saveUserInfoToBackend(); // 这会在组件挂载时自动执行
+            getDoMInfo();
+            setTimeout(() => {
+              handleStart()
+            }, 0);
+          });
+          return {
+            ...dataRefs,
+            config,
+            handleStart,
+            setContainerStyle,
+            setCardStyle,
+            setAnimation,
+            handleSwitch,
+            handleReset,
+            clickCard,
+            formattedTime,
+            startCountdown,
+            timer,
+          };
+        },
+      };
+      Vue.createApp(App).mount("#app");
+    </script>
+  </body>
+</html>
