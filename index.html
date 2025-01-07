@@ -15,16 +15,39 @@
   </head>
   <body>
     <div id="index-app">
+      <div class="index-ranking">
+        <div class="shiny-text">Game rankings !!</div>
+        <div v-for="(item,index) in rankings" class="ranking-item">
+          <div :class="['rank-box',`rank-box${index}`]">{{index+1}}.&nbsp;{{item.name}}</div>
+        </div>
+      </div>
       <div class="btn-container">
         <img src="./static/avater.png" style="width: 76px;height: 76px;border-radius: 50%;margin-bottom: 10px;">
+
         <div class="btn" @click="handleStart">Start</div>
-        <div class="btn" @click="sendStars">Donate</div>
+        <div class="btn donateBtn" @click="sendStars">Donate</div>
       </div>
+      <div class="donation-count">donation stars: 13</div>
+      <div class="donate-text">Thank you so much and Your donation is our driving force .</div>
     </div>
     <script>
       const { reactive, ref, toRefs, setup, computed, onMounted, watch } = Vue;
       const App = {
         setup() {
+          const rankings = ref([
+            {
+              'name':"xiaoming",
+              'avater':'./static/avater.png'
+            },
+            {
+              'name':"xiaoming",
+              'avater':'./static/avater.png'
+            },
+            {
+              'name':"xiaoming",
+              'avater':'./static/avater.png'
+            }
+          ])
           const handleStart = () => {
             window.location.href = "game.html";
           };
@@ -39,6 +62,7 @@
             }
           };
           return {
+            rankings,
             handleStart,
             sendStars
           };
