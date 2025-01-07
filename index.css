@@ -23,23 +23,22 @@ body {
   background-position: center; /* 图片居中显示 */
   background-repeat: no-repeat; /* 不重复背景图像 */
 }
+.index-avater{
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
 
 .index-ranking {
   padding: 2vw;
 }
 .rank-box {
-  width: 150px;
+  width: 100px;
   white-space: nowrap; /* 强制不换行 */
   overflow: hidden; /* 超出内容隐藏 */
   text-overflow: ellipsis; /* 添加省略号 */
-  padding: 0 2px;
-  height: 30px;
-  text-align: center;
-  color: #fff;
-  line-height: 30px;
-  font-weight: bold;
-  border-radius: 5px;
-  font-size: 15px;
+ 
 }
 
 /* 第一名：金色 */
@@ -70,16 +69,23 @@ body {
 }
 
 .ranking-item {
+  width: 150px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   color: #fff;
   margin-bottom: 1.5vw;
+  padding: 2px;
+  height: 30px;
+  font-size: 15px;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 5px;
 }
 .ranking-item > img {
-  height: 28px;
-  width: 28px;
+  height: 24px;
+  width: 24px;
   border-radius: 50%;
-  margin-right: 5px;
 }
 .donation-count{
   position: absolute;bottom: 20px;

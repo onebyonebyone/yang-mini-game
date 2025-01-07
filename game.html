@@ -505,41 +505,7 @@
               }, config.animationTime + 100);
             }
           };
-
-          /**
-           * 获取并保存用户信息到后端
-           */
-          const saveUserInfoToBackend = () => {
-            const data = Telegram.WebApp.initDataUnsafe;
-            console.log("User info loaded:", Telegram.WebApp.initDataUnsafe);
-            if (data && data.user) {
-              const userInfo = {
-                uid: data.user.id,
-                user_name: data.user.first_name,
-                photo_url: data.user.photo_url || "",
-              };
-
-              // 调用后端接口保存用户信息
-              fetch("https://video-back.guoyufeng.cn/user/login", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(userInfo),
-              })
-                .then((response) => response.json())
-                .then((data) => {
-                  console.log("用户信息已保存:", data);
-                })
-                .catch((error) => {
-                  console.error("保存用户信息失败:", error);
-                });
-            } else {
-              console.log("用户信息不可用");
-            }
-          };
           onMounted(() => {
-            saveUserInfoToBackend(); // 这会在组件挂载时自动执行
             getDoMInfo();
             setTimeout(() => {
               handleStart()

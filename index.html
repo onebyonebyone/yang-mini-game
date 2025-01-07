@@ -17,43 +17,40 @@
     <div id="index-app">
       <div class="index-ranking">
         <div class="shiny-text">Game rankings !!</div>
-        <div v-for="(item,index) in rankings" class="ranking-item">
-          <div :class="['rank-box',`rank-box${index}`]">{{index+1}}.&nbsp;{{item.name}}</div>
+        <div
+          v-for="(item,index) in rankings"
+          :class="['ranking-item',`rank-box${index}`]"
+        >
+          <img :src="item.photo_url" />
+          <div :class="['rank-box']">{{index+1}}.&nbsp;{{item.user_name}}</div>
         </div>
       </div>
       <div class="btn-container">
-        <img src="./static/avater.png" style="width: 76px;height: 76px;border-radius: 50%;margin-bottom: 10px;">
-
+        <img
+          :src="userInfo.photo_url || './static/avater.png'"
+          class="index-avater"
+        />
         <div class="btn" @click="handleStart">Start</div>
         <div class="btn donateBtn" @click="sendStars">Donate</div>
       </div>
-      <div class="donation-count">donation stars: 13</div>
-      <div class="donate-text">Thank you so much and Your donation is our driving force .</div>
+      <div class="donation-count">donation stars: {{stars}}</div>
+      <div class="donate-text">
+        Thank you so much and Your donation is our driving force .
+      </div>
     </div>
     <script>
+      const UserInfoKey = "Telegram-BigMouse-UserInfo";
       const { reactive, ref, toRefs, setup, computed, onMounted, watch } = Vue;
       const App = {
         setup() {
-          const rankings = ref([
-            {
-              'name':"xiaoming",
-              'avater':'./static/avater.png'
-            },
-            {
-              'name':"xiaoming",
-              'avater':'./static/avater.png'
-            },
-            {
-              'name':"xiaoming",
-              'avater':'./static/avater.png'
-            }
-          ])
+          const userInfo = ref({});
+          const rankings = ref([]);
+          const stars = ref(0);
           const handleStart = () => {
             window.location.href = "game.html";
           };
           const sendStars = () => {
             const link = "https://t.me/$N6mSE237aVdKAQAA36i_8YMStuw";
-
             // 使用 Telegram.WebApp.openLink 在小程序内部打开链接
             if (window.Telegram && window.Telegram.WebApp) {
               window.Telegram.WebApp.openInvoice(link);
@@ -61,10 +58,93 @@
               alert("Telegram WebApp API is not available");
             }
           };
+          /**
+           * 获取并保存用户信息到后端
+           */
+          const saveUserInfoToBackend = () => {
+            const userStr = localStorage.getItem(UserInfoKey);
+            if (userStr) {
+              userInfo.value = JSON.parse(userStr);
+              return;
+            }
+            const data = Telegram.WebApp.initDataUnsafe;
+            console.log("User info loaded:", Telegram.WebApp.initDataUnsafe);
+            if (data && data.user) {
+              const info = {
+                uid: data.user.id,
+                user_name: data.user.first_name,
+                photo_url: data.user.photo_url || "",
+              };
+              localStorage.setItem(UserInfoKey, JSON.stringify(info));
+              userInfo.value = info;
+              // 调用后端接口保存用户信息
+              fetch("https://video-back.guoyufeng.cn/user/login", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(info),
+              })
+                .then((response) => response.json())
+                .then((data) => {
+                  console.log("用户信息已保存:", data);
+                })
+                .catch((error) => {
+                  console.error("保存用户信息失败:", error);
+                });
+            } else {
+              console.log("用户信息不可用");
+            }
+          };
+          const getRanking = () => {
+            fetch("https://video-back.guoyufeng.cn/user/rank ", {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                rankings.value = data.data.slice(0,3);
+                console.log("data:", data);
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+          };
+          const getDonate = () => {
+            fetch("https://video-back.guoyufeng.cn/user/get_donate", {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                stars.value = data.data || 0;
+                console.log("data:", data);
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+          };
+          onMounted(() => {
+            saveUserInfoToBackend(); // 这会在组件挂载时自动执行
+            getRanking();
+            getDonate();
+            document.addEventListener("visibilitychange", () => {
+              if (document.hidden) {
+              } else {
+                getDonate()
+              }
+            });
+          });
           return {
             rankings,
+            userInfo,
+            stars,
             handleStart,
-            sendStars
+            sendStars,
           };
         },
       };
