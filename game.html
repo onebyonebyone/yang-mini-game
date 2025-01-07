@@ -556,8 +556,8 @@
                 }
               )
                 .then((response) => response.json())
-                .then((data) => {
-                  data.level = data.data.current_level
+                .then((res) => {
+                  data.level = res.data.current_level
                 })
                 .catch((error) => {
                   console.error("error:", error);
