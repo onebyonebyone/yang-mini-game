@@ -84,7 +84,7 @@
           });
 
           const data = reactive({
-            level: 1,
+            level: 0,
             cards: [],
             select: new Map(),
             containerInfo: null,
@@ -563,9 +563,7 @@
                   console.error("error:", error);
                 });
             }else{
-              setTimeout(()=>{
-                handleStart()
-              },0)
+              data.level = 1
             }
           }
           onMounted(() => {
