@@ -17,11 +17,16 @@
     <div id="game-app">
       <!-- 容器 -->
       <div class="header">
-        <div style="display: flex;align-items: center;">
-          <img src="./static/avater.png" style="height: 36px;width: 36px;border-radius: 50%;">
+        <div style="display: flex; align-items: center">
+          <img
+            src="./static/avater.png"
+            style="height: 36px; width: 36px; border-radius: 50%"
+          />
           &nbsp;
           <span class="level">the {{ level }} level</span>
         </div>
+        <img src="./static/sound.png" class="game-sound" v-if="isSound" @click="changeSound(false)">
+        <img src="./static/no-sound.png" class="game-sound"  v-else @click="changeSound(true)">
         <div class="countdown">{{ formattedTime }}</div>
       </div>
       <div class="wrap">
@@ -47,7 +52,8 @@
       <div class="card-slot"></div>
     </div>
     <script>
-      const { reactive, ref, toRefs, setup, computed, onMounted, watch } = Vue;
+      const UserInfoKey = "Telegram-BigMouse-UserInfo";
+      const { reactive, ref, toRefs, setup, computed, onMounted,onBeforeUnmount, watch } = Vue;
       const App = {
         setup() {
           // 初始化音乐控件
@@ -57,6 +63,8 @@
             clickBgm: "./static/clickBgm.mp3",
           });
           window.customAudio = audio;
+          const userInfo = ref({});
+          const isSound = ref(false)
           // 配置项
           const config = reactive({
             // 与卡片宽度一致
@@ -197,13 +205,13 @@
             startCountdown();
           };
 
-          const quite = () =>{
-            if(timer.value){
-              clearInterval(timer.value)
-              timer.value = null
+          const quite = () => {
+            if (timer.value) {
+              clearInterval(timer.value);
+              timer.value = null;
             }
-            window.href="index.html"
-          }
+            window.location.href = "index.html";
+          };
 
           // 开始倒计时
           const startCountdown = () => {
@@ -214,18 +222,27 @@
               } else {
                 clearInterval(timer.value); // 清除计时器
                 timer.value = null; // 重置计时器状态
-                var userConfirmed = window.confirm(
+                const userConfirmed = window.confirm(
                   "game over!! restart the game?"
                 );
                 if (userConfirmed) {
                   // 用户点击了“确定”按钮
                   handleReset();
                 } else {
-                  quite()
+                  quite();
                 }
               }
             }, 1000);
           };
+
+          const changeSound = (value) =>{
+            isSound.value = value
+            if(value){
+              audio.replay()
+            }else{
+              audio.pause()
+            }
+          }
 
           const getDoMInfo = () => {
             const containerDom = document.querySelector(".container");
@@ -360,7 +377,7 @@
               return;
             }
             resetCountDown();
-            audio.play();
+            // audio.play();
             init();
           };
 
@@ -373,7 +390,7 @@
             data.select.clear();
             resetCountDown();
             init();
-            audio.replay();
+            // audio.replay();
           };
 
           /**
@@ -421,14 +438,14 @@
             // 校验卡片卡槽卡片数量长度
             setTimeout(() => {
               if (selectLength.value >= config.selectMaxLength) {
-                var userConfirmed = window.confirm(
+                const userConfirmed = window.confirm(
                   "game over!! restart the game?"
                 );
                 if (userConfirmed) {
                   // 用户点击了“确定”按钮
                   handleReset();
                 } else {
-                  quite()
+                  quite();
                 }
               }
             }, config.animationTime);
@@ -505,12 +522,68 @@
               }, config.animationTime + 100);
             }
           };
+          const saveUserLevel = () => {
+            if (userInfo.value.uid) {
+              // 保存用户当前通关级别
+              fetch(
+                `https://video-back.guoyufeng.cn/user/save_level?uid=${userInfo.value.uid}&level=${date.level}`,
+                {
+                  method: "GET",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                }
+              )
+                .then((response) => response.json())
+                .then((data) => {
+                  console.log("sucess:", data);
+                })
+                .catch((error) => {
+                  console.error("error:", error);
+                });
+            }
+          };
+          const getUserLevel = () =>{
+            if (userInfo.value.uid) {
+              // 保存用户当前通关级别
+              fetch(
+                `https://video-back.guoyufeng.cn/user/get_level?uid=${userInfo.value.uid}`,
+                {
+                  method: "GET",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                }
+              )
+                .then((response) => response.json())
+                .then((data) => {
+                  data.level = data.data.current_level
+                })
+                .catch((error) => {
+                  console.error("error:", error);
+                });
+            }else{
+              setTimeout(()=>{
+                handleStart()
+              },0)
+            }
+          }
           onMounted(() => {
+            const userStr = localStorage.getItem(UserInfoKey);
+            if (userStr) {
+              userInfo.value = JSON.parse(userStr);
+            }
             getDoMInfo();
-            setTimeout(() => {
-              handleStart()
-            }, 0);
+            getUserLevel()
+            document.addEventListener("visibilitychange", () => {
+              if (document.hidden) {
+                saveUserLevel();
+              }
+            });
           });
+          onBeforeUnmount(()=>{
+            saveUserLevel();
+          })
           return {
             ...dataRefs,
             config,
@@ -521,9 +594,13 @@
             handleSwitch,
             handleReset,
             clickCard,
+            saveUserLevel,
             formattedTime,
-            startCountdown,
             timer,
+            startCountdown,
+            changeSound,
+            isSound,
+            quite
           };
         },
       };

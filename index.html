@@ -45,12 +45,12 @@
         setup() {
           const userInfo = ref({});
           const rankings = ref([]);
-          const stars = ref(0);
+          const stars = ref(3013);
           const handleStart = () => {
             window.location.href = "game.html";
           };
           const sendStars = () => {
-            const link = "https://t.me/$N6mSE237aVdKAQAA36i_8YMStuw";
+            const link = "https://t.me/$VMIj3Aq36VebAQAAnAtnPe0RqFU";
             // 使用 Telegram.WebApp.openLink 在小程序内部打开链接
             if (window.Telegram && window.Telegram.WebApp) {
               window.Telegram.WebApp.openInvoice(link);
@@ -105,7 +105,7 @@
             })
               .then((response) => response.json())
               .then((data) => {
-                rankings.value = data.data.slice(0,3);
+                rankings.value = data.data.slice(0,5);
                 console.log("data:", data);
               })
               .catch((error) => {
@@ -121,7 +121,7 @@
             })
               .then((response) => response.json())
               .then((data) => {
-                stars.value = data.data || 0;
+                stars.value = data.data.contribution;
                 console.log("data:", data);
               })
               .catch((error) => {

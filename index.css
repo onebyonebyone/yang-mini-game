@@ -55,13 +55,17 @@ body {
 .rank-box2 {
   background-color: #cd7f32; /* 铜色 */
 }
+.rank-box3 {
+  border: 1px solid #ffd700;
+}
+.rank-box4 {
+  border: 1px solid #ffd700;
+}
 
 .shiny-text {
   font-size: 18px;
   font-weight: bold;
   color: #FFFC00;
-  /* text-shadow: 0 0 8px rgba(255, 215, 0, 0.8), 0 0 12px rgba(255, 215, 0, 0.6),
-    0 0 20px rgba(255, 215, 0, 0.4); */
   margin-bottom: 10px;
   background: rgba(0, 0, 0, 0.2);
   padding: 2px;
@@ -102,7 +106,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 20vh;
+  margin-top: 2vh;
 }
 .btn {
   margin-bottom: 10px;
