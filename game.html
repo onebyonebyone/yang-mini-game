@@ -9,7 +9,7 @@
     />
     <link rel="preload" href="./static/game.png" as="image">
     <link rel="stylesheet" href="./game.css" />
-    <script src="https://unpkg.com/vue@3.2.12/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
     <script src="./utils/audio.js"></script>
     <title></title>
@@ -54,6 +54,7 @@
     </div>
     <script>
       const UserInfoKey = "Telegram-BigMouse-UserInfo";
+      const levelKey = "Telegram-BigMouse-level"
       const { reactive, ref, toRefs, setup, computed, onMounted,onBeforeUnmount, watch } = Vue;
       const App = {
         setup() {
@@ -64,6 +65,7 @@
             clickBgm: "./static/clickBgm.mp3",
           });
           window.customAudio = audio;
+          // uid:8182968731
           const userInfo = ref({});
           const isSound = ref(false)
           // 配置项
@@ -265,6 +267,7 @@
           watch(
             () => data.level,
             () => {
+              localStorage.setItem(levelKey,data.level)
               handleReset();
             }
           );
@@ -545,24 +548,10 @@
             }
           };
           const getUserLevel = () =>{
-            if (userInfo.value.uid) {
-              // 保存用户当前通关级别
-              fetch(
-                `https://video-back.guoyufeng.cn/user/get_level?uid=${userInfo.value.uid}`,
-                {
-                  method: "GET",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                }
-              )
-                .then((response) => response.json())
-                .then((res) => {
-                  data.level = res.data.current_level || 1
-                })
-                .catch((error) => {
-                  console.error("error:", error);
-                });
+            // 获取用户通过级别
+            const levelStr = localStorage.getItem(levelKey)
+            if(levelStr){
+              data.level = Number(levelStr)
             }else{
               data.level = 1
             }
@@ -574,15 +563,13 @@
             }
             getDoMInfo();
             getUserLevel()
-            document.addEventListener("visibilitychange", () => {
-              if (document.hidden) {
-                saveUserLevel();
-              }
-            });
+            saveUserLevel()
           });
+
           onBeforeUnmount(()=>{
-            saveUserLevel();
+            saveUserLevel()
           })
+
           return {
             ...dataRefs,
             config,
