@@ -71,10 +71,10 @@
            */
           const saveUserInfoToBackend = () => {
             const userStr = localStorage.getItem(UserInfoKey);
-            if (userStr) {
-              userInfo.value = JSON.parse(userStr);
-              return;
-            }
+            // if (userStr) {
+            //   userInfo.value = JSON.parse(userStr);
+            //   return;
+            // }
             const data = Telegram.WebApp.initDataUnsafe;
             console.log("User info loaded:", Telegram.WebApp.initDataUnsafe);
             if (data && data.user) {
