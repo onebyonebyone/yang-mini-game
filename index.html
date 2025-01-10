@@ -202,7 +202,7 @@
 
           const getUserLevel = () => {
             fetch(
-              `https://video-back.guoyufeng.cn/user/get_level?uid=1213${userInfo.value.uid}`,
+              `https://video-back.guoyufeng.cn/user/get_level?uid=${userInfo.value.uid}`,
               {
                 method: "GET",
                 headers: {
