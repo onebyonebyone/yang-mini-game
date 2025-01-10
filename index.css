@@ -27,7 +27,7 @@ body {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 
 .index-ranking {
@@ -61,19 +61,30 @@ body {
 .rank-box4 {
   border: 1px solid #ffd700;
 }
+.zan{
+  color: #fff;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
 
 .shiny-text {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: bold;
   color: #FFFC00;
-  margin-bottom: 10px;
   background: rgba(0, 0, 0, 0.2);
   padding: 5px;
   border-radius: 2px;
+  margin-bottom: 10px;
+}
+
+.vote-text{
+  color: #fff;
+  font-weight: bold;
+  font-size: 15px;
 }
 
 .ranking-item {
-  width: 160px;
+  width: 90%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -86,7 +97,7 @@ body {
   font-weight: bold;
   border-radius: 5px;
 }
-.ranking-item > img {
+.ranking-item > div> img {
   height: 9vw;
   width: 9vw;
   border-radius: 50%;
@@ -151,6 +162,7 @@ body {
   height: 18vh;
   overflow: hidden;
   position: relative;
+  width: 60%;
 }
 
 .scroll-content {
@@ -159,7 +171,7 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  animation: scrollUp 6s linear infinite;
+  animation: scrollUp 10s linear infinite;
 }
 
 @keyframes scrollUp {

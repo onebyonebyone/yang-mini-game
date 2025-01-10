@@ -7,7 +7,7 @@
       name="viewport"
       content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
     />
-    <link rel="stylesheet" href="./index.css?v=1.1" />
+    <link rel="stylesheet" href="./index.css?v=0.1" />
     <link rel="preload" href="./static/index.png" as="image" />
     <script src="https://unpkg.com/vue@3.2.12/dist/vue.global.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
@@ -17,18 +17,43 @@
   <body>
     <div id="index-app">
       <div class="index-ranking">
-        <div class="shiny-text">Game rankings !!</div>
-        <div class="scroll-container">
-          <div class="scroll-content">
-            <div
-              v-for="(item,index) in rankings"
-              :class="['ranking-item',`rank-box${index}`]"
-            >
-              <img :src="item.photo_url||'./static/avater.png'" />
-              <div :class="['rank-box']">
-                {{index+1}}.&nbsp;{{item.user_name}}
+        <div class="shiny-text">
+          <div style="display: flex; justify-content: space-between">
+            <div>Game rankings !!</div>
+            <div>Level: {{statisticsInfo.level}}</div>
+          </div>
+          <div class="vote-text">
+            Vote for someone you like
+            <img src="./static/cai.svg" style="width: 24px" />
+          </div>
+        </div>
+        <div style="display: flex">
+          <div class="scroll-container">
+            <div class="scroll-content">
+              <div
+                v-for="(item,index) in rankings"
+                :class="['ranking-item',`rank-box${index}`]"
+              >
+                <div style="display: flex; align-items: center">
+                  <img :src="item.photo_url||'./static/avater.png'" />
+                  &nbsp;
+                  <div :class="['rank-box']">
+                    {{index+1}}.&nbsp;{{item.user_name}}
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center">
+                  <img
+                    src="./static/cai.svg"
+                    @click="handleZan(item)"
+                    v-if="item.isZan"
+                  />
+                  <img src="./static/heart.svg" v-else />
+                </div>
               </div>
             </div>
+          </div>
+          <div style="margin-left: 10px; width: 40%">
+            <div></div>
           </div>
         </div>
       </div>
@@ -37,6 +62,9 @@
           :src="userInfo.photo_url || './static/avater.png'"
           class="index-avater"
         />
+        <div v-if="statisticsInfo.zan" class="zan">
+          You've been liked {{statisticsInfo.zan}}
+        </div>
         <div class="btn" @click="handleStart">Start</div>
         <div class="btn donateBtn" @click="sendStars">Donate</div>
       </div>
@@ -46,14 +74,19 @@
       </div>
     </div>
     <script>
-      const users = [{user_name:"h3"},{user_name:"pp"},{user_name:"htff"}]
       const UserInfoKey = "Telegram-BigMouse-UserInfo";
+      const levelKey = "Telegram-BigMouse-level";
       const { reactive, ref, toRefs, setup, computed, onMounted, watch } = Vue;
       const App = {
         setup() {
+          //  uid: 8182968731
           const userInfo = ref({});
           const rankings = ref([]);
           const stars = ref(3013);
+          const statisticsInfo = ref({
+            level: 1,
+            zan: 0,
+          });
           const handleStart = () => {
             window.location.href = "game.html";
           };
@@ -85,6 +118,7 @@
               };
               localStorage.setItem(UserInfoKey, JSON.stringify(info));
               userInfo.value = info;
+              getUserLevel();
               // 调用后端接口保存用户信息
               fetch("https://video-back.guoyufeng.cn/user/login", {
                 method: "POST",
@@ -113,7 +147,12 @@
             })
               .then((response) => response.json())
               .then((data) => {
-                rankings.value = data.data.concat(users).slice(0, 5);
+                rankings.value = data.data.slice(0, 5).map((item) => {
+                  return {
+                    ...item,
+                    isZan: true,
+                  };
+                });
                 console.log("data:", data);
               })
               .catch((error) => {
@@ -136,6 +175,54 @@
                 console.error(error);
               });
           };
+          const handleZan = (item) => {
+            item.isZan = false;
+            setTimeout(() => {
+              item.isZan = true;
+            }, 400);
+            fetch(
+              `https://video-back.guoyufeng.cn/user/zan?uid=${userInfo.value.uid}&zan_uid=${item.uid}`,
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              }
+            )
+              .then((response) => response.json())
+              .then((data) => {
+                getUserLevel();
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+          };
+
+          const getUserLevel = () => {
+            fetch(
+              `https://video-back.guoyufeng.cn/user/get_level?uid=1213${userInfo.value.uid}`,
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              }
+            )
+              .then((response) => response.json())
+              .then((res) => {
+                if (res.data) {
+                  localStorage.setItem(levelKey, res.data.current_level || 1);
+                  statisticsInfo.value = {
+                    level: res.data.current_level || 1,
+                    zan: res.data.zan_number || 0,
+                  };
+                }
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+          };
+
           onMounted(() => {
             saveUserInfoToBackend(); // 这会在组件挂载时自动执行
             getRanking();
@@ -151,10 +238,12 @@
             rankings,
             userInfo,
             stars,
+            statisticsInfo,
             handleStart,
             sendStars,
             getDonate,
             getRanking,
+            handleZan,
           };
         },
       };
