@@ -76,7 +76,7 @@
     <script>
       const UserInfoKey = "Telegram-BigMouse-UserInfo";
       const levelKey = "Telegram-BigMouse-level";
-      const { reactive, ref, toRefs, setup, computed, onMounted, watch } = Vue;
+      const { reactive, ref, toRefs, setup, computed, onMounted, watch,nextTick } = Vue;
       const App = {
         setup() {
           //  uid: 8182968731
@@ -118,7 +118,9 @@
               };
               localStorage.setItem(UserInfoKey, JSON.stringify(info));
               userInfo.value = info;
-              getUserLevel();
+              nextTick(()=>{
+                getUserLevel();
+              })
               // 调用后端接口保存用户信息
               fetch("https://video-back.guoyufeng.cn/user/login", {
                 method: "POST",
